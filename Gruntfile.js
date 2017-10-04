@@ -9,11 +9,11 @@ module.exports = function(grunt) {
       }
     },
     jshint: {
-      files: ['src/color-thief.js']
+      files: ['src/index.js']
     },
   	jscs: {
       src: [
-        'src/color-thief.js'
+        'src/index.js'
       ],
       options: {
         config: ".jscsrc"
@@ -26,13 +26,13 @@ module.exports = function(grunt) {
       },
       dist: {
         files: {
-          'dist/color-thief.min.js': ['src/color-thief.js']
+          'dist/color-thief.min.js': ['src/index.js']
         }
       }
     },
     watch: {
       test: {
-        files: ['src/color-thief.js'],
+        files: ['src/index.js'],
         tasks: ['jshint', 'jscs']
       }
     }
