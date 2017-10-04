@@ -18,171 +18,167 @@
  */
 
 
-/*
-  CanvasImage Class
-  Class that wraps the html image element and canvas.
-  It also simplifies some of the canvas context manipulation
-  with a set of helper functions.
-*/
-var CanvasImage = function (image) {
-    this.canvas  = document.createElement('canvas');
-    this.context = this.canvas.getContext('2d');
-
-    document.body.appendChild(this.canvas);
-
-    this.width  = this.canvas.width  = image.width;
-    this.height = this.canvas.height = image.height;
-
-    this.context.drawImage(image, 0, 0, this.width, this.height);
-};
-
-CanvasImage.prototype.clear = function () {
-    this.context.clearRect(0, 0, this.width, this.height);
-};
-
-CanvasImage.prototype.update = function (imageData) {
-    this.context.putImageData(imageData, 0, 0);
-};
-
-CanvasImage.prototype.getPixelCount = function () {
-    return this.width * this.height;
-};
-
-CanvasImage.prototype.getImageData = function () {
-    return this.context.getImageData(0, 0, this.width, this.height);
-};
-
-CanvasImage.prototype.removeCanvas = function () {
-    this.canvas.parentNode.removeChild(this.canvas);
-};
-
-
-var ColorThief = function () {};
-
-/*
- * getColor(sourceImage[, quality])
- * returns {r: num, g: num, b: num}
- *
- * Use the median cut algorithm provided by quantize.js to cluster similar
- * colors and return the base color from the largest cluster.
- *
- * Quality is an optional argument. It needs to be an integer. 1 is the highest quality settings.
- * 10 is the default. There is a trade-off between quality and speed. The bigger the number, the
- * faster a color will be returned but the greater the likelihood that it will not be the visually
- * most dominant color.
- *
- * */
-ColorThief.prototype.getColor = function(sourceImage, quality) {
-    var palette       = this.getPalette(sourceImage, 5, quality);
-    var dominantColor = palette[0];
-    return dominantColor;
-};
-
-
-/*
- * getPalette(sourceImage[, colorCount, quality])
- * returns array[ {r: num, g: num, b: num}, {r: num, g: num, b: num}, ...]
- *
- * Use the median cut algorithm provided by quantize.js to cluster similar colors.
- *
- * colorCount determines the size of the palette; the number of colors returned. If not set, it
- * defaults to 10.
- *
- * BUGGY: Function does not always return the requested amount of colors. It can be +/- 2.
- *
- * quality is an optional argument. It needs to be an integer. 1 is the highest quality settings.
- * 10 is the default. There is a trade-off between quality and speed. The bigger the number, the
- * faster the palette generation but the greater the likelihood that colors will be missed.
- *
- *
+/**
+ * CanvasImage Class
+ * Class that wraps the html image element and canvas.
+ * It also simplifies some of the canvas context manipulation
+ * with a set of helper functions.
  */
-ColorThief.prototype.getPalette = function(sourceImage, colorCount, quality) {
+export class CanvasImage {
+    constructor(image) {
+        this.canvas  = document.createElement('canvas');
+        this.context = this.canvas.getContext('2d');
 
-    if (typeof colorCount === 'undefined' || colorCount < 2 || colorCount > 256) {
-        colorCount = 10;
+        this.width  = this.canvas.width  = image.width;
+        this.height = this.canvas.height = image.height;
+
+        this.context.drawImage(image, 0, 0, this.width, this.height);
     }
-    if (typeof quality === 'undefined' || quality < 1) {
-        quality = 10;
+
+    clear() {
+        this.context.clearRect(0, 0, this.width, this.height);
     }
 
-    // Create custom CanvasImage object
-    var image      = new CanvasImage(sourceImage);
-    var imageData  = image.getImageData();
-    var pixels     = imageData.data;
-    var pixelCount = image.getPixelCount();
+    update(imageData) {
+        this.context.putImageData(imageData, 0, 0);
+    }
 
-    // Store the RGB values in an array format suitable for quantize function
-    var pixelArray = [];
-    for (var i = 0, offset, r, g, b, a; i < pixelCount; i = i + quality) {
-        offset = i * 4;
-        r = pixels[offset + 0];
-        g = pixels[offset + 1];
-        b = pixels[offset + 2];
-        a = pixels[offset + 3];
-        // If pixel is mostly opaque and not white
-        if (a >= 125) {
-            if (!(r > 250 && g > 250 && b > 250)) {
-                pixelArray.push([r, g, b]);
+    getPixelCount() {
+        return this.width * this.height;
+    }
+
+    getImageData() {
+        return this.context.getImageData(0, 0, this.width, this.height);
+    }
+}
+
+export default class ColorThief {
+
+    /**
+     * Use the median cut algorithm provided by quantize.js to cluster similar
+     * colors and return the base color from the largest cluster.
+     *
+     * @param {HTMLImageElement} sourceImage
+     *     The HTML image element to pull the color palette from.
+     *
+     * @param {number=} quality
+     *     Quality is an optional argument. It needs to be an integer.
+     *     1 is the highest quality settings. 10 is the default. There is a
+     *     trade-off between quality and speed. The bigger the number, the
+     *     faster a color will be returned but the greater the likelihood that
+     *     it will not be the visually most dominant color.
+     *
+     * @return {{r: number, g: number, b: number}}
+     */
+    getColor(sourceImage, quality) {
+        const palette = this.getPalette(sourceImage, 5, quality);
+        return palette[0];
+    };
+
+    /**
+     * Use the median cut algorithm provided by quantize.js
+     * to cluster similar colors.
+     *
+     * BUGGY: Function does not always return the requested amount of colors.
+     * It can be +/- 2.
+     *
+     * @param {HTMLImageElement} sourceImage
+     *     The HTML image element to pull the color palette from.
+     *
+     * @param {number=} colorCount
+     *     Determines the size of the palette; the number of colors returned.
+     *     If not set, it defaults to 10.
+     *
+     * @param {number=} quality
+     *     Quality is an optional argument. It needs to be an integer.
+     *     1 is the highest quality settings. 10 is the default.
+     *     There is a trade-off between quality and speed. The bigger
+     *     the number, the faster the palette generation but the greater
+     *     the likelihood that colors will be missed.
+     *
+     * @return {{r: number, g: number, b: number}[]}
+     */
+    getPalette(sourceImage, colorCount = 10, quality = 10) {
+
+        if (colorCount < 2 || colorCount > 256) {
+            colorCount = 10;
+        }
+        if (quality < 1) {
+            quality = 10;
+        }
+
+        // Create custom CanvasImage object
+        var image      = new CanvasImage(sourceImage);
+        var imageData  = image.getImageData();
+        var pixels     = imageData.data;
+        var pixelCount = image.getPixelCount();
+
+        // Store the RGB values in an array format suitable for quantize function
+        var pixelArray = [];
+        for (var i = 0, offset, r, g, b, a; i < pixelCount; i = i + quality) {
+            offset = i * 4;
+            r = pixels[offset + 0];
+            g = pixels[offset + 1];
+            b = pixels[offset + 2];
+            a = pixels[offset + 3];
+            // If pixel is mostly opaque and not white
+            if (a >= 125) {
+                if (!(r > 250 && g > 250 && b > 250)) {
+                    pixelArray.push([r, g, b]);
+                }
             }
         }
+
+        // Send array to quantize function which clusters values
+        // using median cut algorithm
+        var cmap    = MMCQ.quantize(pixelArray, colorCount);
+        var palette = cmap? cmap.palette() : null;
+
+        return palette;
     }
 
-    // Send array to quantize function which clusters values
-    // using median cut algorithm
-    var cmap    = MMCQ.quantize(pixelArray, colorCount);
-    var palette = cmap? cmap.palette() : null;
-
-    // Clean up
-    image.removeCanvas();
-
-    return palette;
-};
-
-ColorThief.prototype.getColorFromUrl = function(imageUrl, callback, quality) {
-    sourceImage = document.createElement("img");
-    var thief = this;
-    sourceImage.addEventListener('load' , function(){
-        var palette = thief.getPalette(sourceImage, 5, quality);
-        var dominantColor = palette[0];
-        callback(dominantColor, imageUrl);
-    });
-    sourceImage.src = imageUrl
-};
-
-
-ColorThief.prototype.getImageData = function(imageUrl, callback) {
-    xhr = new XMLHttpRequest();
-    xhr.open('GET', imageUrl, true);
-    xhr.responseType = 'arraybuffer'
-    xhr.onload = function(e) {
-        if (this.status == 200) {
-            uInt8Array = new Uint8Array(this.response)
-            i = uInt8Array.length
-            binaryString = new Array(i);
-            for (var i = 0; i < uInt8Array.length; i++){
-                binaryString[i] = String.fromCharCode(uInt8Array[i])
-            }
-            data = binaryString.join('')
-            base64 = window.btoa(data)
-            callback ("data:image/png;base64,"+base64)
-        }
-    }
-    xhr.send();
-};
-
-ColorThief.prototype.getColorAsync = function(imageUrl, callback, quality) {
-    var thief = this;
-    this.getImageData(imageUrl, function(imageData){
+    getColorFromUrl(imageUrl, callback, quality) {
         sourceImage = document.createElement("img");
-        sourceImage.addEventListener('load' , function(){
-            var palette = thief.getPalette(sourceImage, 5, quality);
+        sourceImage.addEventListener('load' , () => {
+            var palette = this.getPalette(sourceImage, 5, quality);
             var dominantColor = palette[0];
-            callback(dominantColor, this);
+            callback(dominantColor, imageUrl);
         });
-        sourceImage.src = imageData;      
-    });
-};
+        sourceImage.src = imageUrl;
+    }
 
+    getImageData(imageUrl, callback) {
+        xhr = new XMLHttpRequest();
+        xhr.open('GET', imageUrl, true);
+        xhr.responseType = 'arraybuffer'
+        xhr.onload = function(e) {
+            if (this.status == 200) {
+                uInt8Array = new Uint8Array(this.response)
+                i = uInt8Array.length
+                binaryString = new Array(i);
+                for (var i = 0; i < uInt8Array.length; i++){
+                    binaryString[i] = String.fromCharCode(uInt8Array[i])
+                }
+                data = binaryString.join('')
+                base64 = window.btoa(data)
+                callback("data:image/png;base64,"+base64)
+            }
+        }
+        xhr.send();
+    }
+
+    getColorAsync(imageUrl, callback, quality) {
+        this.getImageData(imageUrl, (imageData) => {
+            sourceImage = document.createElement("img");
+            sourceImage.addEventListener('load' , () => {
+                var palette = this.getPalette(sourceImage, 5, quality);
+                var dominantColor = palette[0];
+                callback(dominantColor, this);
+            });
+            sourceImage.src = imageData;
+        });
+    }
+}
 
 
 /*!
@@ -198,24 +194,28 @@ ColorThief.prototype.getColorAsync = function(imageUrl, callback, quality) {
  * Licensed under the BSD License: http://www.opensource.org/licenses/bsd-license.php
  * @license
  */
-if (!pv) {
-    var pv = {
-        map: function(array, f) {
-          var o = {};
-          return f ? array.map(function(d, i) { o.index = i; return f.call(o, d); }) : array.slice();
-        },
-        naturalOrder: function(a, b) {
-            return (a < b) ? -1 : ((a > b) ? 1 : 0);
-        },
-        sum: function(array, f) {
-          var o = {};
-          return array.reduce(f ? function(p, d, i) { o.index = i; return p + f.call(o, d); } : function(p, d) { return p + d; }, 0);
-        },
-        max: function(array, f) {
-          return Math.max.apply(null, f ? pv.map(array, f) : array);
-        }
-    };
-}
+const pv = {
+    map(array, f) {
+        const o = {};
+        return f
+            ? array.map((d, i) => { o.index = i; return f.call(o, d); })
+            : array.slice();
+    },
+    naturalOrder(a, b) {
+        return (a < b) ? -1 : ((a > b) ? 1 : 0);
+    },
+    sum(array, f) {
+        const o = {};
+        return array.reduce(
+            f
+                ? (p, d, i) => { o.index = i; return p + f.call(o, d); }
+                : (p, d) => p + d,
+            0);
+    },
+    max(array, f) {
+        return Math.max.apply(null, f ? pv.map(array, f) : array);
+    },
+};
 
 
 
@@ -241,7 +241,7 @@ var newPixels = myPixels.map(function(p) {
 });
 
  */
-var MMCQ = (function() {
+const MMCQ = (() => {
     // private constants
     var sigbits = 5,
         rshift = 8 - sigbits,
@@ -254,62 +254,70 @@ var MMCQ = (function() {
     }
 
     // Simple priority queue
-    function PQueue(comparator) {
-        var contents = [],
-            sorted = false;
+    class PQueue {
+        constructor(comparator) {
+            this.comparator = comparator;
+            this.contents = [];
+            this.sorted = false;
+        }
 
-        function sort() {
-            contents.sort(comparator);
+        sort() {
+            this.contents.sort(comparator);
             sorted = true;
         }
 
-        return {
-            push: function(o) {
-                contents.push(o);
-                sorted = false;
-            },
-            peek: function(index) {
-                if (!sorted) sort();
-                if (index===undefined) index = contents.length - 1;
-                return contents[index];
-            },
-            pop: function() {
-                if (!sorted) sort();
-                return contents.pop();
-            },
-            size: function() {
-                return contents.length;
-            },
-            map: function(f) {
-                return contents.map(f);
-            },
-            debug: function() {
-                if (!sorted) sort();
-                return contents;
-            }
-        };
+        push(o) {
+            this.contents.push(o);
+            this.sorted = false;
+        }
+
+        peek(index) {
+            if (!this.sorted) sort();
+            if (index === undefined) index = this.contents.length - 1;
+            return this.contents[index];
+        }
+
+        pop() {
+            if (!this.sorted) sort();
+            return this.contents.pop();
+        }
+
+        size() {
+            return this.contents.length;
+        }
+
+        map(f) {
+            return this.contents.map(f);
+        }
+
+        debug() {
+            if (!this.sorted) sort();
+            return this.contents;
+        }
     }
 
     // 3d color space box
-    function VBox(r1, r2, g1, g2, b1, b2, histo) {
-        var vbox = this;
-        vbox.r1 = r1;
-        vbox.r2 = r2;
-        vbox.g1 = g1;
-        vbox.g2 = g2;
-        vbox.b1 = b1;
-        vbox.b2 = b2;
-        vbox.histo = histo;
-    }
-    VBox.prototype = {
-        volume: function(force) {
+    class VBox {
+        constructor(r1, r2, g1, g2, b1, b2, histo) {
+            var vbox = this;
+            vbox.r1 = r1;
+            vbox.r2 = r2;
+            vbox.g1 = g1;
+            vbox.g2 = g2;
+            vbox.b1 = b1;
+            vbox.b2 = b2;
+            vbox.histo = histo;
+        }
+
+        volume(force) {
             var vbox = this;
             if (!vbox._volume || force) {
                 vbox._volume = ((vbox.r2 - vbox.r1 + 1) * (vbox.g2 - vbox.g1 + 1) * (vbox.b2 - vbox.b1 + 1));
             }
             return vbox._volume;
-        },
-        count: function(force) {
+        }
+
+        count(force) {
             var vbox = this,
                 histo = vbox.histo;
             if (!vbox._count_set || force) {
@@ -327,12 +335,14 @@ var MMCQ = (function() {
                 vbox._count_set = true;
             }
             return vbox._count;
-        },
-        copy: function() {
+        }
+
+        copy() {
             var vbox = this;
             return new VBox(vbox.r1, vbox.r2, vbox.g1, vbox.g2, vbox.b1, vbox.b2, vbox.histo);
-        },
-        avg: function(force) {
+        }
+
+        avg(force) {
             var vbox = this,
                 histo = vbox.histo;
             if (!vbox._avg || force) {
@@ -358,7 +368,6 @@ var MMCQ = (function() {
                 if (ntot) {
                     vbox._avg = [~~(rsum/ntot), ~~(gsum/ntot), ~~(bsum/ntot)];
                 } else {
-//                    console.log('empty box');
                     vbox._avg = [
                         ~~(mult * (vbox.r1 + vbox.r2 + 1) / 2),
                         ~~(mult * (vbox.g1 + vbox.g2 + 1) / 2),
@@ -367,8 +376,9 @@ var MMCQ = (function() {
                 }
             }
             return vbox._avg;
-        },
-        contains: function(pixel) {
+        }
+
+        contains(pixel) {
             var vbox = this,
                 rval = pixel[0] >> rshift;
                 gval = pixel[1] >> rshift;
@@ -377,31 +387,35 @@ var MMCQ = (function() {
                     gval >= vbox.g1 && gval <= vbox.g2 &&
                     bval >= vbox.b1 && bval <= vbox.b2);
         }
-    };
+    }
 
     // Color map
-    function CMap() {
-        this.vboxes = new PQueue(function(a,b) {
-            return pv.naturalOrder(
-                a.vbox.count()*a.vbox.volume(),
-                b.vbox.count()*b.vbox.volume()
-            );
-        });
-    }
-    CMap.prototype = {
-        push: function(vbox) {
+    class CMap {
+        constructor() {
+            this.vboxes = new PQueue((a, b) => {
+                return pv.naturalOrder(
+                    a.vbox.count()*a.vbox.volume(),
+                    b.vbox.count()*b.vbox.volume()
+                );
+            });
+        }
+
+        push(vbox) {
             this.vboxes.push({
                 vbox: vbox,
                 color: vbox.avg()
             });
-        },
-        palette: function() {
+        }
+
+        palette() {
             return this.vboxes.map(function(vb) { return vb.color; });
-        },
-        size: function() {
+        }
+
+        size() {
             return this.vboxes.size();
-        },
-        map: function(color) {
+        }
+
+        map(color) {
             var vboxes = this.vboxes;
             for (var i=0; i<vboxes.size(); i++) {
                 if (vboxes.peek(i).vbox.contains(color)) {
@@ -409,8 +423,9 @@ var MMCQ = (function() {
                 }
             }
             return this.nearest(color);
-        },
-        nearest: function(color) {
+        }
+
+        nearest(color) {
             var vboxes = this.vboxes,
                 d1, d2, pColor;
             for (var i=0; i<vboxes.size(); i++) {
@@ -425,11 +440,12 @@ var MMCQ = (function() {
                 }
             }
             return pColor;
-        },
-        forcebw: function() {
+        }
+
+        forcebw() {
             // XXX: won't  work yet
             var vboxes = this.vboxes;
-            vboxes.sort(function(a,b) { return pv.naturalOrder(pv.sum(a.color), pv.sum(b.color));});
+            vboxes.sort((a, b) => pv.naturalOrder(pv.sum(a.color), pv.sum(b.color)));
 
             // force darkest color to black if everything < 5
             var lowest = vboxes[0].color;
@@ -442,7 +458,7 @@ var MMCQ = (function() {
             if (highest[0] > 251 && highest[1] > 251 && highest[2] > 251)
                 vboxes[idx].color = [255,255,255];
         }
-    };
+    }
 
     // histo (1-d array, giving the number of pixels in
     // each quantized region of color space), or null on error
@@ -450,7 +466,7 @@ var MMCQ = (function() {
         var histosize = 1 << (3 * sigbits),
             histo = new Array(histosize),
             index, rval, gval, bval;
-        pixels.forEach(function(pixel) {
+        pixels.forEach((pixel) => {
             rval = pixel[0] >> rshift;
             gval = pixel[1] >> rshift;
             bval = pixel[2] >> rshift;
@@ -466,7 +482,7 @@ var MMCQ = (function() {
             bmin=1000000, bmax=0,
             rval, gval, bval;
         // find min/max
-        pixels.forEach(function(pixel) {
+        pixels.forEach((pixel) => {
             rval = pixel[0] >> rshift;
             gval = pixel[1] >> rshift;
             bval = pixel[2] >> rshift;
@@ -535,7 +551,7 @@ var MMCQ = (function() {
                 partialsum[i] = total;
             }
         }
-        partialsum.forEach(function(d,i) {
+        partialsum.forEach((d, i) => {
             lookaheadsum[i] = total-d;
         });
         function doCut(color) {
@@ -558,7 +574,6 @@ var MMCQ = (function() {
                     // set dimensions
                     vbox1[dim2] = d2;
                     vbox2[dim1] = vbox1[dim2] + 1;
-//                    console.log('vbox counts:', vbox.count(), vbox1.count(), vbox2.count());
                     return [vbox1, vbox2];
                 }
             }
@@ -573,7 +588,6 @@ var MMCQ = (function() {
     function quantize(pixels, maxcolors) {
         // short-circuit
         if (!pixels.length || maxcolors < 2 || maxcolors > 256) {
-//            console.log('wrong number of maxcolors');
             return false;
         }
 
@@ -591,7 +605,7 @@ var MMCQ = (function() {
 
         // get the beginning vbox from the colors
         var vbox = vboxFromPixels(pixels, histo),
-            pq = new PQueue(function(a,b) { return pv.naturalOrder(a.count(), b.count()); });
+            pq = new PQueue((a, b) => pv.naturalOrder(a.count(), b.count()));
         pq.push(vbox);
 
         // inner function to do the iteration
@@ -612,7 +626,6 @@ var MMCQ = (function() {
                     vbox2 = vboxes[1];
 
                 if (!vbox1) {
-//                    console.log("vbox1 not defined; shouldn't happen!");
                     return;
                 }
                 lh.push(vbox1);
@@ -622,7 +635,6 @@ var MMCQ = (function() {
                 }
                 if (ncolors >= target) return;
                 if (niters++ > maxIterations) {
-//                    console.log("infinite loop; perhaps too few pixels!");
                     return;
                 }
             }
@@ -632,9 +644,8 @@ var MMCQ = (function() {
         iter(pq, fractByPopulations * maxcolors);
 
         // Re-sort by the product of pixel occupancy times the size in color space.
-        var pq2 = new PQueue(function(a,b) {
-            return pv.naturalOrder(a.count()*a.volume(), b.count()*b.volume());
-        });
+        var pq2 = new PQueue((a, b) =>
+            pv.naturalOrder(a.count()*a.volume(), b.count()*b.volume()));
         while (pq.size()) {
             pq2.push(pq.pop());
         }
@@ -652,6 +663,6 @@ var MMCQ = (function() {
     }
 
     return {
-        quantize: quantize
+        quantize,
     };
 })();
