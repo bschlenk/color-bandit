@@ -83,6 +83,33 @@ export function getPalette(sourceImage, colorCount = 10, quality = 10) {
 }
 
 /**
+ * Use the median cut algorithm provided by quantize.js
+ * to cluster similar colors.
+ *
+ * BUGGY: Function does not always return the requested amount of colors.
+ * It can be +/- 2.
+ *
+ * @param {string} url The url or file path to an image. In case of a url,
+ *     it is subject to the cross origin policy.
+ *
+ * @param {number=} colorCount
+ *     Determines the size of the palette; the number of colors returned.
+ *     If not set, it defaults to 10.
+ *
+ * @param {number=} quality
+ *     Quality is an optional argument. It needs to be an integer.
+ *     1 is the highest quality settings. 10 is the default.
+ *     There is a trade-off between quality and speed. The bigger
+ *     the number, the faster the palette generation but the greater
+ *     the likelihood that colors will be missed.
+ *
+ * @return {Promise<{r: number, g: number, b: number}[]>}
+ */
+export function getPaletteFromUrl(url, colorCount = 10, quality = 10) {
+  loadImage(url).then(image => getPalette(image, colorCount, quality));
+}
+
+/**
  * Use the median cut algorithm provided by quantize.js to cluster similar
  * colors and return the base color from the largest cluster.
  *
@@ -103,7 +130,7 @@ export function getColor(sourceImage, quality) {
   return palette[0];
 }
 
-export function getColorFromUrl(imageUrl, callback, quality) {
+export function getColorFromUrl(imageUrl, quality) {
   return loadImage(imageUrl).then((image) => {
     const palette = getPalette(image, 5, quality);
     const dominantColor = palette[0];
