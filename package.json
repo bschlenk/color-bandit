@@ -30,14 +30,35 @@
       "url": "https://raw.githubusercontent.com/lokesh/color-thief/master/LICENSE/"
     }
   ],
-  "main": "dist/color-thief.min.js",
+  "main": "lib/color-bandit.js",
+  "scripts": {
+    "build": "webpack --env build",
+    "dev": "webpack --progress --colors --watch --env dev",
+    "test": "jest",
+    "test:watch": "jest --compilers js:babel-core/register --colors -w ./test/*.spec.js"
+  },
+  "browser": {
+    "./src/canvas.js": "./src/canvas-browser.js"
+  },
+  "peerDependencies": {
+    "canvas": "^1.6"
+  },
   "devDependencies": {
-    "grunt": "~1.0.1",
-    "grunt-contrib-watch": "^1.0.0",
-    "grunt-contrib-connect": "^1.0.2",
-    "grunt-contrib-uglify": "~2.0.0",
-    "grunt-contrib-jshint": "~1.0.0",
-    "grunt-jscs": "^1.8.0",
-    "grunt-contrib-jshint": "^0.11.2"
+    "babel-cli": "6.26.0",
+    "babel-core": "6.26.0",
+    "babel-eslint": "8.0.1",
+    "babel-loader": "7.1.2",
+    "babel-plugin-add-module-exports": "0.2.1",
+    "babel-preset-env": "^1.6.0",
+    "eslint": "4.8.0",
+    "eslint-config-airbnb-base": "^12.0.1",
+    "eslint-loader": "1.9.0",
+    "eslint-plugin-import": "^2.7.0",
+    "jest": "^21.2.1",
+    "webpack": "3.6.0",
+    "yargs": "9.0.1"
+  },
+  "dependencies": {
+    "canvas": "^1.6.7"
   }
 }
