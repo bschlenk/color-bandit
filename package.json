@@ -1,5 +1,5 @@
 {
-  "name": "color-thief",
+  "name": "color-bandit",
   "version": "2.0.2",
   "author": {
     "name": "Lokesh Dhakar",
@@ -31,14 +31,12 @@
     }
   ],
   "main": "lib/color-bandit.js",
+  "browser": "canvas-browser",
   "scripts": {
     "build": "webpack --env build",
     "dev": "webpack --progress --colors --watch --env dev",
     "test": "jest",
     "test:watch": "jest --compilers js:babel-core/register --colors -w ./test/*.spec.js"
-  },
-  "browser": {
-    "./src/canvas.js": "./src/canvas-browser.js"
   },
   "peerDependencies": {
     "canvas": "^1.6"
@@ -57,8 +55,5 @@
     "jest": "^21.2.1",
     "webpack": "3.6.0",
     "yargs": "9.0.1"
-  },
-  "dependencies": {
-    "canvas": "^1.6.7"
   }
 }
