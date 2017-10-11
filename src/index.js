@@ -17,7 +17,7 @@
  * @license
  */
 
-import { loadImage } from './canvas';
+import { loadImage } from 'canvas-everywhere';
 import CanvasImage from './canvas-image';
 import { quantize } from './mmcq';
 
@@ -106,7 +106,7 @@ export function getPalette(sourceImage, colorCount = 10, quality = 10) {
  * @return {Promise<{r: number, g: number, b: number}[]>}
  */
 export function getPaletteFromUrl(url, colorCount = 10, quality = 10) {
-  loadImage(url).then(image => getPalette(image, colorCount, quality));
+  return loadImage(url).then(image => getPalette(image, colorCount, quality));
 }
 
 /**
