@@ -1,0 +1,7 @@
+#!/usr/bin/env node
+
+const { getPaletteFromUrl } = require('../lib/color-bandit');
+
+getPaletteFromUrl(process.argv[1]).then((palette) => {
+  console.log(palette);
+});
